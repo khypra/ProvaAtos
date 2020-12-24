@@ -79,12 +79,12 @@ namespace Atividade
         }
         
         private class Possibility{
-            private int direction;
-            private Boolean visited;
+            public int direction;
+            public Boolean visited;
             
             public Possibility(int direction, Boolean visited){
                 this.setDirection(direction);
-                this.setVisisted(visited);
+                this.setVisited(visited);
             }
             
             public int getDirection() => this.direction;
@@ -95,13 +95,16 @@ namespace Atividade
         }
 
         private class Crossroad{
-            private int [] position;
-            private int lastMove;
+            
+            public int positionX { get ;}
+            public int positionY { get ;}
             private List<Possibility> possibilities;
+
             
             public Crossroad(int [] position){
                 possibilities = new List<Possibility>();
-                this.setPosition(position);
+                this.positionX = position[0];
+                this.positionY = position[1];
 
             }
 
@@ -110,18 +113,18 @@ namespace Atividade
                 possibilities.Add(possibility);
             }
 
+            public Boolean removePossibilities(Possibility p){
+                if(possibilities.Remove(possibilities.Where(a => a.getDirection() == p.getDirection()).FirstOrDefault()))
+                    return true;
+                else return false;
+            }
 
-            public int[] getPosition() => this.position;
 
-            public int getLastMove() => this.lastMove;
             
-            public List<int> getPossibilities() => this.possibilities;
+            public List<Possibility> getPossibilities() => this.possibilities;
 
-            private void setPosition(int[] position) => this.position = position;
+            private void setPossiblities(List<Possibility> possibilities) => this.possibilities = possibilities;
 
-            private void setPossiblities(List<int> possibilities) => this.possibilities = possibilities;
-
-            public void setLastMove(int lastMove) => this.lastMove = lastMove; 
 
 
         }
@@ -135,10 +138,12 @@ namespace Atividade
             private string [,] maze;
             private ArrayList navigation;
             private List<Crossroad> crossroads;
+            private string fileName {get ; set ;}
 
 
             //constructor
             public Labrinth(string filePath){
+                this.navigation = new ArrayList();
                 this.crossroads = new List<Crossroad>();
                 LerArquivo(filePath);                
             }
@@ -148,13 +153,17 @@ namespace Atividade
                 int count = 0;
                 int count2 = 0;
                 string [,] temp;
+
+                //getting name and path
+                this.fileName = Path.GetFileNameWithoutExtension(filePath);
+                this.filePath = filePath;
+
                 // using file stream to read the file
                 using (var stream = File.OpenRead(filePath)){
                     using (var reader = new StreamReader(stream)){  
                         this.setLength(reader.ReadLine());
                         temp = new string [this.length[0], this.length[1]];
                         string line;
-
                         while (!(String.IsNullOrEmpty(line = reader.ReadLine()))){
                             count2=0;
                             string[] aux = line.Split(' ');
@@ -168,6 +177,13 @@ namespace Atividade
                         this.setMaze(temp);
                     }
                 }
+            }
+
+            public void SalvarArquivo(){
+                string pathWithoutName = Path.GetDirectoryName(this.getFilepath());
+                MessageBox.Show("Salvando o arquivo no diretório  :  "+ pathWithoutName);
+                System.IO.File.WriteAllLines((pathWithoutName  + "\\saida-" + this.fileName + ".txt" ), this.getNavigation().Cast<string>());
+                MessageBox.Show("Arquivo salvo com sucesso com nome : \n" +  this.fileName);
             }
 
             //function to locate the starting point of each maze
@@ -187,32 +203,56 @@ namespace Atividade
                 
                 //function to look arround and decide were to go from where you came
                 Crossroad cross = new Crossroad(position);
-                if(!this.getFacing().Equals(-1))
-                    cross.setLastMove(this.facing);
-                
+
                 for (int i=0; i<4; i++)
                 
                     switch(i){
-                        case 0: 
+                        // each of these cases have the same proprieties and the only difference is the direction they are facing (0 north , 1 West, 2 East , 3 South)
+                        case 0:
+                            //cheking if the current position is within limits of the array
                             if(position[0] - 1 >= 0){
-                                if(this.maze[position[0]-1 , position[1]].Equals("0")){
-                                    if(cross.getLastMove().Equals(3)){
+                                //checking if the position north of the actual position is a path (0) or is an X wich marks the initial position
+                                if(this.maze[position[0]-1 , position[1]].Equals("0") || this.maze[position[0]-1 , position[1]].Equals("X")){
+                                    //crossroad where the position x and y equals the northmost position if it exists so we can block useless paths
+                                    Crossroad c = this.crossroads.Where(p => p.positionX == position[0]-1 && p.positionY == position[1]).FirstOrDefault();
+                                    //cheking if the list isn't empty, and cheking the last crosroad passed, if it is equal to the position at north, it means that it is a path that has been walked before
+                                    if( this.crossroads.Count>0 && ( this.crossroads.Last().positionX == (position[0]-1) && this.crossroads.Last().positionY == position[1] ) ){
                                         cross.AddPossibilities(i, true);
                                         break;
-                                    } else {
+                                    // else if c isn't defined null or not initialized
+                                    } else if(c != null){
+                                        // create a possibility that is going to be removed from the position at the north of this one so it can't make you walk the same paths over and over again
+                                        Possibility poss = new Possibility(3, false);
+                                        if(c.removePossibilities(poss))
+                                            break;
+                                        else 
+                                            break;
+                                    }
+                                    //this else means that is an path that hasn't been walked before and is a valid way
+                                    else {
                                         cross.AddPossibilities(i, false);
                                         break;
                                     }
                                 } else break;
                             } else break;
-
+                        
                         case 1: 
                             if(position[1] - 1 >= 0){
-                                if(this.maze[position[0], position[1]-1].Equals("0")){
-                                    if(cross.getLastMove().Equals(2)){
+
+                                Crossroad c = this.crossroads.Where(p => p.positionX == position[0] && p.positionY == position[1]-1).FirstOrDefault();
+
+                                if(this.maze[position[0], position[1]-1].Equals("0") || this.maze[position[0], position[1]-1].Equals("X")){
+                                    if(this.crossroads.Count>0 && ( this.crossroads.Last().positionX == position[0] && this.crossroads.Last().positionY == (position[1]-1) ) ){
                                         cross.AddPossibilities(i, true);
                                         break;
-                                    } else {
+                                    } else if(c != null){
+                                        Possibility poss = new Possibility(2, false);
+                                        if(c.removePossibilities(poss))
+                                            break;
+                                        else 
+                                            break;
+                                    }
+                                    else {
                                         cross.AddPossibilities(i, false);
                                         break;
                                     }
@@ -221,11 +261,21 @@ namespace Atividade
 
                         case 2: 
                             if(position[1] + 1 < this.length[1]){
-                                if(this.maze[position[0], position[1]+1].Equals("0")){
-                                    if(cross.getLastMove().Equals(3)){
+                                if(this.maze[position[0], position[1]+1].Equals("0") || this.maze[position[0], position[1]+1].Equals("X")){
+
+                                    Crossroad c = this.crossroads.Where(p => p.positionX == position[0] && p.positionY == position[1] + 1).FirstOrDefault();
+
+                                    if(this.crossroads.Count>0 && ( this.crossroads.Last().positionX == (position[0]) && this.crossroads.Last().positionY == (position[1] + 1) ) ){
                                         cross.AddPossibilities(i, true);
                                         break;
-                                    } else {
+                                    } else if(c != null){
+                                        Possibility poss = new Possibility(1, false);
+                                        if(c.removePossibilities(poss))
+                                            break;
+                                        else 
+                                            break;
+                                    }
+                                    else {
                                         cross.AddPossibilities(i, false);
                                         break;
                                     }
@@ -234,11 +284,21 @@ namespace Atividade
 
                         case 3: 
                             if(position[0] + 1 < this.length[0]){
-                                if(this.maze[position[0]+1, position[1]].Equals("0")){
-                                    if(cross.getLastMove().Equals(3)){
+                                if(this.maze[position[0]+1, position[1]].Equals("0") || this.maze[position[0]+1, position[1]].Equals("X")){
+
+                                    Crossroad c = this.crossroads.Where(p => p.positionX == position[0]+1 && p.positionY == position[1]).FirstOrDefault();
+
+                                    if(this.crossroads.Count>0 && ( this.crossroads.Last().positionX == (position[0]+1) && this.crossroads.Last().positionY == position[1] ) ){
                                         cross.AddPossibilities(i, true);
                                         break;
-                                    } else {
+                                    } else if(c != null){
+                                        Possibility poss = new Possibility(0, false);
+                                        if(c.removePossibilities(poss))
+                                            break;
+                                        else 
+                                            break;
+                                    }
+                                    else {
                                         cross.AddPossibilities(i, false);
                                         break;
                                     }
@@ -249,39 +309,39 @@ namespace Atividade
                             break;
                         
                     }
-
-                //if(cross.getPossibilities().Count >= 2)
+                    //adding the crossroad in the list
                     this.crossroads.Add(cross);
             }
 
             // function that moves acording to a set priority defined at funtion LookArround
-            private Boolean MoveFoward(int[] position){
+            private Boolean MoveFoward(int[] local){
+                int [] aux = {this.crossroads[this.crossroads.Count-1].positionX , this.crossroads[this.crossroads.Count-1].positionY};
                 //validation to make sure we are at the same postition as it is stored in crossroads[].getPosition()
-                if (this.crossroads[this.crossroads.Count-1].getPosition().Equals(position)){
+                if (aux[0] == local[0] && aux[1] == local[1]){
                     // validation to make sure we have at least one possibility to move when in a crossroad
                     if(this.crossroads[this.crossroads.Count - 1].getPossibilities().Count > 0){
                         //setting facing var with the foremost possibility
-                        this.setFacing(this.crossroads[this.crossroads.Count - 1].getPossibilities()[0]);
+                        this.setFacing(this.crossroads[this.crossroads.Count - 1].getPossibilities()[0].getDirection());
                         // using facing to determinate direction of movement
                         switch(this.getFacing()){
-                        //in case x 
+                        //in case x walks towards that direction and remove the possibility from the array.
                             case 0:
-                                position[0]--;
+                                local[0]--;
                                 this.crossroads[this.crossroads.Count - 1].getPossibilities().RemoveAt(0);
                                 return true;
 
                             case 1:
-                                position[1]--;
+                                local[1]--;
                                 this.crossroads[this.crossroads.Count - 1].getPossibilities().RemoveAt(0);
                                 return true;
 
                             case 2:
-                                position[1]++;
+                                local[1]++;
                                 this.crossroads[this.crossroads.Count - 1].getPossibilities().RemoveAt(0);
                                 return true;
 
                             case 3:
-                                position[0]++;
+                                local[0]++;
                                 this.crossroads[this.crossroads.Count - 1].getPossibilities().RemoveAt(0);
                                 return true;
 
@@ -291,57 +351,66 @@ namespace Atividade
                     } else return false;
 
                 } else return false;
-
-                return false;
             }
 
+            private Boolean Choice(int[] current){
+                //checking if we finished the maze
+                if(current[0] - 1 < 0 || current[1] - 1 < 0 || current[0] + 1 >= this.length[0] || current[1] + 1 >= this.length[1])
+                    return false;
 
-            private Boolean Move(int[] position){
+                //cheking if have more than 1 direction to go
+                if (this.crossroads[this.crossroads.Count()-1].getPossibilities().Count().Equals(1)){ 
+                    if(this.MoveFoward(current)){
+                        this.crossroads.RemoveAt(this.crossroads.Count() - 1);
+                        return true;
+                    } else return false;
+                } else {            //this implies that we have no routes or have more than 1 route in this crossroad
+                    // checks if still has possibilities , and if dont go to the last possible position in the stack and starts backtracking
+                    if(this.crossroads[this.crossroads.Count() - 1].getPossibilities().Count() == 0){
+                        this.crossroads.RemoveAt(this.crossroads.Count() - 1);
+                        current[0] = this.crossroads[this.crossroads.Count() - 1].positionX;
+                        current[1] = this.crossroads[this.crossroads.Count() - 1].positionY;
+                        return true;
+                    }
+                    //this checks if the most prioritized option is already visited and if not move to it
+                    if(!this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getVisited())
+                        return this.MoveFoward(current);
+                    else{ 
+                        //this take the most prioritized option that have been visited and put it in the end of list of possibilities
+                        // in that way even if the others are all dead ends, this path will be available to backtrack;
+                            Possibility aux = new Possibility(
+                                this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getDirection(), 
+                                this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getVisited());
+
+                            this.crossroads[this.crossroads.Count() - 1].getPossibilities().RemoveAt(0);
+                            this.crossroads[this.crossroads.Count() - 1].getPossibilities().Add(aux);
+                            return this.MoveFoward(current);
+                    }
+                }
+            }
+
+            private Boolean Move(int[] current){
                 //facing =  0 is North
                 //facing =  1 is West
                 //facing =  2 is East
                 //facing =  3 is South
                 
                 // checking if this is the first interaction
-                if (!this.navigation.Count.Equals(0)){  
+                if (!this.facing.Equals(-1)){  
+                    //temporary variable to compare values 
+                    int [] temp = {this.crossroads[this.crossroads.Count-1].positionX , this.crossroads[this.crossroads.Count-1].positionY};
                     // checking if the actual position is the one already mapped
-                    if(this.crossroads[this.crossroads.Count-1].getPosition().Equals(position)){  
-                        //cheking if have more than 1 direction to go
-                        if (this.crossroads[this.crossroads.Count() - 1].getPossibilities().Count().Equals(1))){ 
-                            if(this.MoveFoward(position)){
-                                this.crossroads.RemoveAt(this.crossroads.Count() - 1);
-                                return true;
-                            } else return false;
-                        } else {            //this implies that we still have more than 1 route in this crossroad
-                            //this checks if the most prioritized option is already visited and if not move to it
-                            if(!this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getVisited())
-                                return this.MoveFoward(position);
-                            else{ 
-                                //this take the most prioritized option that have been visited and put it in the end of list of possibilities
-                                // in that way even if the others are all dead ends, this path will be available to backtrack;
-                                 Possibility aux = new Possibility();
-                                 aux.setDirection(this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getDirection());
-                                 aux.setVisited(this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getVisited());
-                                 this.crossroads[this.crossroads.Count - 1].getPossibilities().RemoveAt(0);
-                                 this.crossroads[this.crossroads.Count - 1].getPossibilities().Add(aux.getDirection(), aux.getVisited());
-                                 return this.MoveFoward(position);
-                            }
-                        }
-                     } else {      //this implies that this position possibilities haven't been mapped yet
-                        LookArround(position);
-                        //checking if we finished the maze
-                        if(position[0] - 1 < 0 || position[1] - 1 < 0 || position[0] + 1 >= this.length[0] || position[1] + 1 >= this.length[1])
-                            return false;
-                        else    {
-                            return this.MoveFoward(position);
-                        }
+                    if((temp[0] == current[0]) && (temp[1] == current[1]))
+                       return this.Choice(current);
+                    else {      //this implies that this position possibilities haven't been mapped yet
+                        LookArround(current);
+                        return this.Choice(current);
                     }
-                    return this.MoveFoward(position);
                 } else {
                     //first movement
-                    LookArround(position);
-                    this.setFacing(this.crossroads[this.crossroads.Count].getPossibilities()[0]);
-                    return this.MoveFoward(position);
+                    LookArround(current);
+                    this.setFacing(this.crossroads[this.crossroads.Count() - 1].getPossibilities()[0].getDirection());
+                    return this.MoveFoward(current);
                 }
                 
             }
@@ -426,8 +495,10 @@ namespace Atividade
 
             Labrinth labrinth = new Labrinth(filePath);
             labrinth.Navigate();
-
-
+            MessageBox.Show("As dimensões do labirinto são : " + labrinth.getLength()[0] + " x " + labrinth.getLength()[1] +
+                        "\nO ponto de partida é a posição : [" +labrinth.getStartPoint()[0] + " , " + labrinth.getStartPoint()[1] + "]" +
+                        "\nA saída se encontra na posição de movimento : " + labrinth.getNavigation()[labrinth.getNavigation().Count -1] );
+            labrinth.SalvarArquivo();
         }
 
 

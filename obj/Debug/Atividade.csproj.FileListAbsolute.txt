@@ -28,3 +28,13 @@ C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\obj\Debug\Atividade.c
 C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\obj\Debug\Atividade.csproj.CoreCompileInputs.cache
 C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\obj\Debug\Labirinto.exe
 C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\obj\Debug\Labirinto.pdb
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Atividade.csprojAssemblyReference.cache
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Atividade.frmAtividade.resources
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Labirinto.Properties.Resources.resources
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Atividade.csproj.GenerateResource.cache
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Atividade.csproj.CoreCompileInputs.cache
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Labirinto.exe
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\obj\Debug\Labirinto.pdb
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\bin\Debug\Labirinto.exe.config
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\bin\Debug\Labirinto.exe
+C:\Users\mathe\Documents\AtosCapitalTEST\Template Solution\ProvaAtos\bin\Debug\Labirinto.pdb
