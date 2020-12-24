@@ -196,7 +196,7 @@ namespace Atividade
                 string pathWithoutName = Path.GetDirectoryName(this.getFilepath());
                 MessageBox.Show("Salvando o arquivo no diretório  :  "+ pathWithoutName);
                 System.IO.File.WriteAllLines((pathWithoutName  + "\\saida-" + this.fileName + ".txt" ), this.getNavigation().Cast<string>());
-                MessageBox.Show("Arquivo salvo com sucesso com nome : \n" +  this.fileName);
+                MessageBox.Show("Arquivo salvo com sucesso com nome : \n" +  "saida-" + this.fileName + ".txt");
             }
 
             //function to locate the starting point of each maze
