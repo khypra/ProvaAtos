@@ -82,6 +82,11 @@ namespace Atividade
             public int direction;
             public Boolean visited;
             
+            /*class constructor
+             * @params
+             * int
+             * Boolean
+            */
             public Possibility(int direction, Boolean visited){
                 this.setDirection(direction);
                 this.setVisited(visited);
@@ -100,7 +105,10 @@ namespace Atividade
             public int positionY { get ;}
             private List<Possibility> possibilities;
 
-            
+            /*class constructor
+             * @params
+             * int []
+            */
             public Crossroad(int [] position){
                 possibilities = new List<Possibility>();
                 this.positionX = position[0];
@@ -108,11 +116,13 @@ namespace Atividade
 
             }
 
+            //function to add a possibility
             public void AddPossibilities(int p, Boolean v){
                 Possibility possibility = new Possibility(p, v);
                 possibilities.Add(possibility);
             }
 
+            //function to remove a possibility
             public Boolean removePossibilities(Possibility p){
                 if(possibilities.Remove(possibilities.Where(a => a.getDirection() == p.getDirection()).FirstOrDefault()))
                     return true;
@@ -140,8 +150,10 @@ namespace Atividade
             private List<Crossroad> crossroads;
             private string fileName {get ; set ;}
 
-
-            //constructor
+            /*class constructor
+             * @params
+             * string
+            */
             public Labrinth(string filePath){
                 this.navigation = new ArrayList();
                 this.crossroads = new List<Crossroad>();
@@ -180,6 +192,7 @@ namespace Atividade
             }
 
             public void SalvarArquivo(){
+                //breaking apart the path input from the user so we can use it as is to save the file
                 string pathWithoutName = Path.GetDirectoryName(this.getFilepath());
                 MessageBox.Show("Salvando o arquivo no diretório  :  "+ pathWithoutName);
                 System.IO.File.WriteAllLines((pathWithoutName  + "\\saida-" + this.fileName + ".txt" ), this.getNavigation().Cast<string>());
@@ -428,6 +441,7 @@ namespace Atividade
                 string transition = "O ["+ (current[0]+1) + ", " + (current[1]+1) + "]";
                 route.Add(transition); 
 
+                //while boolean hasRoute that only will be false if the we got out of the maze
                 while(hasRoute){
                     hasRoute = this.Move(current);
                     if(hasRoute)
